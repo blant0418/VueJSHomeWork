@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Todo Demo Template</title>
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.css'><link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div id="app" class="container my-3">
+  <div class="input-group mb-3">
+    <div class="input-group-prepend">
+      <span class="input-group-text" id="basic-addon1">待辦事項</span>
+    </div>
+    <input type="text" class="form-control" placeholder="準備要做的任務" v-model="todoNew" @keyup.enter="insertTodoList">
+    <div class="input-group-append">
+      <button class="btn btn-primary" type="button" @click="insertTodoList">新增</button>
+    </div>
+  </div>
+  <div class="card text-center">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item">
+          <a class="nav-link" :class="{ 'active' : activeTab == 'all' }" @click="activeTab = 'all'" href="#">全部</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" :class="{ 'active' : activeTab == 'active' }" @click="activeTab = 'active'" href="#">進行中</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" :class="{ 'active' : activeTab == 'finish' }"@click="activeTab = 'finish'" href="#">已完成</a>
+        </li>
+      </ul>
+    </div>
+    <ul class="list-group list-group-flush text-left" v-for="(item, key) in filterTodoList" >
+      <li class="list-group-item" v-if="catchTodoModel != item" @dblclick="SetEditorItem(item)">
+        <div class="d-flex">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" :id="item.id" v-model="item.complete">
+            <label class="form-check-label" 
+            :for="item.id" 
+            v-bind:class="{completed:item.complete}">
+              {{ item.title }}
+            </label>
+          </div>
+          <button type="button" class="close ml-auto" aria-label="Close" @click="removeTodoListWihId(item.id)">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      </li>
+      <li class="list-group-item" v-if="catchTodoModel == item">
+        <input type="text" class="form-control" v-model="catchTodoModel.title" @keyup.enter="modifyTodoTitle" @keyup.esc="clearModifyTodoTitle">
+      </li>
+    </ul>
+    <div class="card-footer d-flex justify-content-between">
+      <span>還有 {{ getUnFinishedList.length }} 筆任務未完成</span>
+      <a href="https://tw.yahoo.com" @click.prevent="InitialTodoList">清除所有任務</a>
+    </div>
+  </div>
+</div>
+<!-- partial -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.js'></script>
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        todoNew:'',
+        todoList:[
+          // {  //自訂義物件模型
+          //   id:'',
+          //   title:'',
+          //   complete:false
+          // }
+        ],
+        activeTab:'all',
+        catchTodoModel:{}
+      },
+      methods: {
+        InitialTodoList: function(){
+          if(this.todoList.length == 0){
+            return;
+          }
+          if(confirm('確認將所有任務清空'))
+          {
+            this.todoList = [];
+            alert(所有紀錄被清空);
+          }      
+        },
+        insertTodoList: function()
+        {
+          if (!this.todoNew.trim()) {
+            return;
+          }
+          const timestamp = Math.floor(Date.now());
+          this.todoList.push({
+            id : timestamp,
+            title : this.todoNew.trim(),
+            complete : false
+          });
+    
+          this.todoNew = '';
+        },
+        // removeTodoListWihIndex: function(index)
+        // {
+        //   //console.log(key)
+        //   //this.todoList.splice(index, 1);
+        // }
+        removeTodoListWihId: function(key)
+        {
+          var arrayIndex = this.todoList.findIndex(x => x.id == key);
+          this.todoList.splice(arrayIndex, 1);
+        },
+        SetEditorItem: function(model){
+          this.catchTodoModel = model;
+        },
+        modifyTodoTitle:function()
+        {
+          console.log()
+          this.todoList.find(x => x.id == this.catchTodoModel.id).title == this.catchTodoModel.title;
+          this.clearModifyTodoTitle();
+        },
+        clearModifyTodoTitle: function()
+        {
+          this.catchTodoModel = {};
+        }
+      },
+      computed: {
+        filterTodoList:function()
+        {
+          if (this.activeTab == 'all') {
+            return this.todoList;
+          }else if(this.activeTab == 'active'){
+            return this.todoList.filter(x => !x.complete);
+          }else if(this.activeTab == 'finish'){
+            return this.todoList.filter(x => x.complete);
+          }else{
+            return [];
+          }
+        },
+        getUnFinishedList:function(){
+          return this.todoList.filter(x => !x.complete);
+        }
+      },
+    });
+    </script>
+</body>
+</html>
